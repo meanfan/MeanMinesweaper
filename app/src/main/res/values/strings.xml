@@ -6,8 +6,9 @@
     <string name="bt_start">开始</string>
     <string name="bt_restart">重开</string>
     <string name="str_int">%d</string>
+    <string name="str_0_int">0%d</string>
     <string name="size_wrong_msg">尺寸不小于3x3</string>
     <string name="mineNum_to_less">雷数应不小于1</string>
     <string name="mineNum_to_much">雷数过多</string>
-
+    <string name="time_divider">:</string>
 </resources>
