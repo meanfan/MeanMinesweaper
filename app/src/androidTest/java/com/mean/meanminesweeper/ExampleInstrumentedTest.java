@@ -1,4 +1,4 @@
-package com.mean.meanminesweaper;
+package com.mean.meanminesweeper;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

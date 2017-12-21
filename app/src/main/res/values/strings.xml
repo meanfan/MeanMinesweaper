@@ -1,3 +1,13 @@
 <resources>
-    <string name="app_name">Mean Minesweaper</string>
+    <string name="app_name">Mean Minesweeper</string>
+    <string name="tv_mine_space_size">尺寸: </string>
+    <string name="tv_mine_num">雷数： </string>
+    <string name="tv_x"> x </string>
+    <string name="bt_start">开始</string>
+    <string name="bt_restart">重开</string>
+    <string name="str_int">%d</string>
+    <string name="size_wrong_msg">尺寸不小于3x3</string>
+    <string name="mineNum_to_less">雷数应不小于1</string>
+    <string name="mineNum_to_much">雷数过多</string>
+
 </resources>

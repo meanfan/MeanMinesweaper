@@ -1,4 +1,4 @@
-package com.mean.meanminesweaper;
+package com.mean.meanminesweeper;
 
 import android.app.*;
 import android.os.*;
@@ -10,8 +10,14 @@ import java.util.Random;
 
 public class MainActivity extends Activity {
     private Button b[][];
-    private TextView t1 = null;
+    private EditText et_rowNum = null;
+    private EditText et_colNum = null;
+    private EditText et_mineNum = null;
     private Map map = null;
+    private GridLayout layout_mineSpace = null;
+    private LinearLayout layout_main = null;
+    private LinearLayout layout_ctrl = null;
+    private Button bt_start = null;
     private int rowNum = 16;
     private int colNum = 16;
     private int mineNum = 30;
@@ -21,53 +27,56 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super. onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
-        final LinearLayout layout_main = new LinearLayout(this);
-        layout_main.setOrientation(LinearLayout.VERTICAL);
+        setContentView(R.layout.activity_main);
+        layout_main = findViewById(R.id.activity_main);
+        layout_ctrl = findViewById(R.id.layout_ctrl);
 
-        LinearLayout layout_ctrl = new LinearLayout(this);
-        layout_ctrl.setOrientation(LinearLayout.HORIZONTAL);
-        layout_ctrl.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT,1));
+        et_rowNum = findViewById(R.id.et_rowNum);
+        et_rowNum.setText(String.format(getString(R.string.str_int),rowNum));
+        et_colNum = findViewById(R.id.et_colNum);
+        et_colNum.setText(String.format(getString(R.string.str_int),colNum));
 
-        TextView tv_size = new TextView(this);
-        tv_size.setText("尺寸： ");
-        layout_ctrl.addView(tv_size);
+        et_mineNum = findViewById(R.id.et_mineNum);
+        et_mineNum.setText(String.format(getString(R.string.str_int),mineNum));
 
-        EditText et_rowNum = new EditText(this);
-        et_rowNum.setText(""+rowNum);
-        et_rowNum.setWidth(100);
-        layout_ctrl.addView(et_rowNum);
-
-        TextView tv_x = new TextView(this);
-        tv_x.setText(" X ");
-        layout_ctrl.addView(tv_x);
-
-        EditText et_colNum = new EditText(this);
-        et_colNum.setText(""+colNum);
-        et_colNum.setWidth(100);
-        layout_ctrl.addView(et_colNum);
-
-        TextView tv_mineNum = new TextView(this);
-        tv_mineNum.setText("雷数： ");
-        layout_ctrl.addView(tv_mineNum);
-
-        EditText et_mineNum = new EditText(this);
-        et_mineNum.setText(""+mineNum);
-        et_mineNum.setWidth(100);
-        layout_ctrl.addView(et_mineNum);
-
-        Button bt_start = new Button(this);
-        bt_start.setText("开始");
-        layout_ctrl.addView(bt_start);
-
+        bt_start = findViewById(R.id.bt_start);
+        bt_start.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int row = Integer.getInteger(et_rowNum.getText().toString());
+                int col = Integer.getInteger(et_colNum.getText().toString());
+                int num = Integer.getInteger(et_mineNum.getText().toString());
+                if(row<3 ||col<3) {
+                    Toast.makeText(MainActivity.this, getString(R.string.size_wrong_msg), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(num<1) {
+                    Toast.makeText(MainActivity.this, getString(R.string.mineNum_to_less), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(num>row*num){
+                    Toast.makeText(MainActivity.this, getString(R.string.mineNum_to_much), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                rowNum = row;
+                colNum = col;
+                mineNum = num;
+                startGame();
+                et_rowNum.setEnabled(false);
+                et_colNum.setEnabled(false);
+                et_mineNum.setEnabled(false);
+                ((Button)v).setEnabled(false);
+            }
+        });
         //TODO 自定义数据
-        et_rowNum.setEnabled(false);
-        et_colNum.setEnabled(false);
-        et_mineNum.setEnabled(false);
-        bt_start.setEnabled(false);
 
-        layout_main.addView(layout_ctrl);
-        GridLayout layout_mineSpace = new GridLayout(this);
+
+
+
+    }
+    public void startGame()
+    {
+        layout_mineSpace = new GridLayout(this);
         layout_mineSpace.setColumnCount(colNum);
         b = new Button[rowNum][colNum];
         map = new Map(rowNum, colNum,mineNum);
@@ -123,21 +132,12 @@ public class MainActivity extends Activity {
                             }
                         }
                         else {
-                            //((Button)v).setText("*");
                             showAll();
                             //layout_main.removeAllViews();
-                            t1 = new TextView(layout_main.getContext());
-                            t1.setText("You are a loser!");
-                            t1.setTextSize(100);
-                            layout_main.addView(t1);
                         }
                         if(clickCount == rowNum * colNum -mineNum) {
                             showAll();
-                            layout_main.removeAllViews();
-                            t1 = new TextView(layout_main.getContext());
-                            t1.setText("You win!");
-                            t1.setTextSize(100);
-                            layout_main.addView(t1);
+                            //layout_main.removeAllViews();
                         }
                     }
                 });
@@ -169,12 +169,8 @@ public class MainActivity extends Activity {
                 });
             }
         }
-        ScrollView sv = new ScrollView(this);
+        ScrollView sv = findViewById(R.id.sv);
         sv.addView(layout_mineSpace);
-        HorizontalScrollView hsv = new HorizontalScrollView(this);
-        hsv.addView(sv);
-        layout_main.addView(hsv);
-        setContentView(layout_main);
     }
     private void showMine(int x,int y)
     {
