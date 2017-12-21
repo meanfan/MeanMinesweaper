@@ -12,35 +12,83 @@ public class MainActivity extends Activity {
     private Button b[][];
     private TextView t1 = null;
     private Map map = null;
-    private int HMineNum = 6;
-    private int VMineNum = 16;
-    private int mineNum = 12;
+    private int rowNum = 16;
+    private int colNum = 16;
+    private int mineNum = 30;
     private int i;
     private int j;
     private int clickCount = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super. onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
         final LinearLayout layout_main = new LinearLayout(this);
         layout_main.setOrientation(LinearLayout.VERTICAL);
-        GridLayout layout = new GridLayout(this);
-        layout.setColumnCount(HMineNum);
-        b = new Button[VMineNum][HMineNum];
-        map = new Map(VMineNum,HMineNum,mineNum);
-        for (i = 0; i < VMineNum; i++) {
-            for (j = 0; j < HMineNum; j++) {
+
+        LinearLayout layout_ctrl = new LinearLayout(this);
+        layout_ctrl.setOrientation(LinearLayout.HORIZONTAL);
+        layout_ctrl.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT,1));
+
+        TextView tv_size = new TextView(this);
+        tv_size.setText("尺寸： ");
+        layout_ctrl.addView(tv_size);
+
+        EditText et_rowNum = new EditText(this);
+        et_rowNum.setText(""+rowNum);
+        et_rowNum.setWidth(100);
+        layout_ctrl.addView(et_rowNum);
+
+        TextView tv_x = new TextView(this);
+        tv_x.setText(" X ");
+        layout_ctrl.addView(tv_x);
+
+        EditText et_colNum = new EditText(this);
+        et_colNum.setText(""+colNum);
+        et_colNum.setWidth(100);
+        layout_ctrl.addView(et_colNum);
+
+        TextView tv_mineNum = new TextView(this);
+        tv_mineNum.setText("雷数： ");
+        layout_ctrl.addView(tv_mineNum);
+
+        EditText et_mineNum = new EditText(this);
+        et_mineNum.setText(""+mineNum);
+        et_mineNum.setWidth(100);
+        layout_ctrl.addView(et_mineNum);
+
+        Button bt_start = new Button(this);
+        bt_start.setText("开始");
+        layout_ctrl.addView(bt_start);
+
+        //TODO 自定义数据
+        et_rowNum.setEnabled(false);
+        et_colNum.setEnabled(false);
+        et_mineNum.setEnabled(false);
+        bt_start.setEnabled(false);
+
+        layout_main.addView(layout_ctrl);
+        GridLayout layout_mineSpace = new GridLayout(this);
+        layout_mineSpace.setColumnCount(colNum);
+        b = new Button[rowNum][colNum];
+        map = new Map(rowNum, colNum,mineNum);
+        for (i = 0; i < rowNum; i++) {
+            for (j = 0; j < colNum; j++) {
                 b[i][j] = new Button(this);
                 //b[i][j].setText("(" + i + "," + j + ")");
-                b[i][j].setHeight(10);
-                b[i][j].setWidth(b[i][j].getHeight());
+                GridLayout.Spec rowSpec = GridLayout.spec(i);
+                GridLayout.Spec colSpec = GridLayout.spec(j);
+                GridLayout.LayoutParams params = new GridLayout.LayoutParams(rowSpec,colSpec);
+                params.width = 100;
+                params.height = 100;
+                params.setGravity(Gravity.FILL);
+                layout_mineSpace.addView(b[i][j],params);
                 b[i][j].setOnClickListener(new OnClickListener() {
                     public void onClick(View v) {
                         int i,j=0;
-                        for(i=0;i<VMineNum;i++)
+                        for(i=0; i< rowNum; i++)
                         {
                             boolean symbol = false;
-                            for(j=0;j<HMineNum;j++)
+                            for(j=0; j< colNum; j++)
                             {
                                 if(v == b[i][j])
                                 {
@@ -48,10 +96,10 @@ public class MainActivity extends Activity {
                                     break;
                                 }
                             }
-                            if(symbol == true)
+                            if(symbol)
                                 break;
                         }
-                        if(map.getShowStatus(i,j) == true)
+                        if(map.getShowStatus(i,j))
                             return;
                         if(clickCount == 0)
                         {
@@ -62,18 +110,28 @@ public class MainActivity extends Activity {
                         if (m != -1)
                         {
                             showMine(i,j);
-                            showNearbyZero(i,j,true);
+                            if(m == 0)
+                            {
+                                if(i-1>=0)
+                                    autoExpand(i-1,j);
+                                if(j-1>=0)
+                                    autoExpand(i,j-1);
+                                if(j+1< colNum)
+                                    autoExpand(i,j+1);
+                                if(i+1< rowNum)
+                                    autoExpand(i+1,j);
+                            }
                         }
                         else {
                             //((Button)v).setText("*");
                             showAll();
-                            layout_main.removeAllViews();
+                            //layout_main.removeAllViews();
                             t1 = new TextView(layout_main.getContext());
                             t1.setText("You are a loser!");
                             t1.setTextSize(100);
                             layout_main.addView(t1);
                         }
-                        if(clickCount == VMineNum * HMineNum -mineNum) {
+                        if(clickCount == rowNum * colNum -mineNum) {
                             showAll();
                             layout_main.removeAllViews();
                             t1 = new TextView(layout_main.getContext());
@@ -87,10 +145,10 @@ public class MainActivity extends Activity {
                     @Override
                     public boolean onLongClick(View v) {
                         int i,j=0;
-                        for(i=0;i<VMineNum;i++)
+                        for(i=0; i< rowNum; i++)
                         {
                             boolean symbol = false;
-                            for(j=0;j<HMineNum;j++)
+                            for(j=0; j< colNum; j++)
                             {
                                 if(v == b[i][j])
                                 {
@@ -101,7 +159,7 @@ public class MainActivity extends Activity {
                             if(symbol == true)
                                 break;
                         }
-                        if(map.getShowStatus(i,j) == false)
+                        if(!map.getShowStatus(i,j))
                             if(((Button)v).getText() == "")
                                 ((Button)v).setText("🚩");
                             else
@@ -109,11 +167,10 @@ public class MainActivity extends Activity {
                         return true;
                     }
                 });
-                layout.addView(b[i][j]);
             }
         }
         ScrollView sv = new ScrollView(this);
-        sv.addView(layout);
+        sv.addView(layout_mineSpace);
         HorizontalScrollView hsv = new HorizontalScrollView(this);
         hsv.addView(sv);
         layout_main.addView(hsv);
@@ -125,44 +182,51 @@ public class MainActivity extends Activity {
         b[x][y].setText(""+map.get(x,y));
         map.setShowStatus(x,y);
     }
-    private void showNearbyZero(int x,int y,boolean isOrigin)
+    private void autoExpandSub(int m,int n)
     {
-        if(x-1>=0)
-            if (map.getShowStatus(x - 1,y) == false) {
-                if (map.get(x - 1, y) == 0) {
-                    showMine(x - 1, y);
-                    showNearbyZero(x - 1, y,false);
-                }else if(isOrigin == false && map.get(x - 1, y) != -1)
-                    showMine(x - 1, y);
+        if(m>=0 && m< rowNum && n>=0 && n< colNum)
+        {
+            if(!map.getShowStatus(m,n))
+            {
+                if(map.get(m,n)!=-1)
+                    showMine(m,n);
+                if(map.get(m,n) == 0)
+                    autoExpand(m,n);
             }
-        if(y-1>=0)
-            if (map.getShowStatus(x,y-1) == false) {
-                if (map.get(x, y-1) == 0) {
-                    showMine(x, y-1);
-                    showNearbyZero(x, y-1,false);
-                }else if(isOrigin == false && map.get(x, y-1) != -1)
-                    showMine(x, y-1);
-            }
-        if(y+1<HMineNum)
-            if (map.getShowStatus(x,y+1) == false) {
-                if (map.get(x, y+1) == 0) {
-                    showMine(x, y+1);
-                    showNearbyZero(x, y+1,false);
-                }else if(isOrigin == false && map.get(x, y+1) != -1)
-                    showMine(x, y+1);
-            }
-        if(x+1<VMineNum)
-            if (map.getShowStatus(x + 1,y) == false) {
-                if (map.get(x + 1, y) == 0) {
-                    showMine(x + 1, y);
-                    showNearbyZero(x + 1, y,false);
-                }else if(isOrigin == false && map.get(x + 1, y) != -1)
-                    showMine(x + 1, y);
-            }
+        }
+    }
+    private void autoExpand(int i,int j)
+    {
+        if(map.get(i,j) == 0) {
+            int m, n;
+            m = i - 1;
+            n = j - 1;
+            autoExpandSub(m, n);
+            n = j;
+            autoExpandSub(m, n);
+            n = j + 1;
+            autoExpandSub(m, n);
+
+            m = i;
+            n = j - 1;
+            autoExpandSub(m, n);
+            n = j + 1;
+            autoExpandSub(m, n);
+
+            m = i + 1;
+            n = j - 1;
+            autoExpandSub(m, n);
+            n = j;
+            autoExpandSub(m, n);
+            n = j + 1;
+            autoExpandSub(m, n);
+        }
+        if(map.get(i,j)!=-1)
+            showMine(i, j);
     }
     private void showAll(){
-        for(int i=0;i<VMineNum;i++)
-            for(int j=0;j<HMineNum;j++)
+        for(int i = 0; i< rowNum; i++)
+            for(int j = 0; j< colNum; j++)
             {
                 int v = map.get(i,j);
                 if(v==-1)
