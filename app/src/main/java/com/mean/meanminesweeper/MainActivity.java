@@ -3,6 +3,7 @@ package com.mean.meanminesweeper;
 import android.app.*;
 import android.os.*;
 import android.text.InputType;
+import android.util.Log;
 import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
@@ -25,17 +26,15 @@ public class MainActivity extends Activity {
     private TextView tv_score = null;
     private TextView tv_mineNum = null;
     private Button bt_start = null;
-    private int rowNum = 16;
-    private int colNum = 16;
-    private int mineNum = 30;
-    private int i;
-    private int j;
+    private int rowNum = 9;
+    private int colNum = 9;
+    private int mineNum = 10;
     private int clickCount = 0;
     private Timer gameTime = null;
     private TimerTask task = null;
     private  int sec = 0;
     private  int score = 0;
-    private boolean isRoundEnd;
+    private boolean isRoundEnd = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super. onCreate(savedInstanceState);
@@ -62,36 +61,45 @@ public class MainActivity extends Activity {
         bt_start.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!isRoundEnd)
+                {
+                    endRound();
+                    return;
+                }
                 int row = Integer.parseInt(et_rowNum.getText().toString());
                 int col = Integer.parseInt(et_colNum.getText().toString());
                 int num = Integer.parseInt(et_mineNum.getText().toString());
-                if(row<3 ||col<3) {
-                    Toast.makeText(MainActivity.this, getString(R.string.size_wrong_msg), Toast.LENGTH_SHORT).show();
+                if(row<9 ||col<9) {
+                    Toast.makeText(MainActivity.this, getString(R.string.size_too_small), Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(num<1) {
-                    Toast.makeText(MainActivity.this, getString(R.string.mineNum_to_less), Toast.LENGTH_SHORT).show();
+                if(row>30 || col>24)
+                {
+                    Toast.makeText(MainActivity.this, getString(R.string.size_too_big), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(num<10) {
+                    Toast.makeText(MainActivity.this, getString(R.string.mineNum_too_less), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if(num>row*num){
-                    Toast.makeText(MainActivity.this, getString(R.string.mineNum_to_much), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.mineNum_too_much), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 rowNum = row;
                 colNum = col;
                 mineNum = num;
-                startRound();
+                bt_start.setText(getString(R.string.bt_restart));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        startRound();
+                    }
+                });
             }
         });
-        layout_ctrl.setVisibility(View.VISIBLE);
-        layout_status.setVisibility(View.INVISIBLE);
-    }
-    public void startRound()
+    }public void startTiming()
     {
-        sec=0;
-        score = 0;
-        clickCount = 0;
-        isRoundEnd = false;
         task = new TimerTask() {
             @Override
             public void run() {
@@ -120,9 +128,18 @@ public class MainActivity extends Activity {
         };
         gameTime = new Timer();
         gameTime.schedule(task,1000,1000);
+    }
+    public void startRound()
+    {
+        et_rowNum.setEnabled(false);
+        et_colNum.setEnabled(false);
+        et_mineNum.setEnabled(false);
+        sec = 0;
+        score = 0;
+        clickCount = 0;
+        isRoundEnd = false;
         tv_score.setText(String.valueOf(0));
         tv_mineNum.setText(String.valueOf(mineNum));
-        layout_status.setVisibility(View.VISIBLE);
         ScrollView sv = findViewById(R.id.sv);
         if(layout_mineSpace != null)
             sv.removeView(layout_mineSpace);
@@ -130,8 +147,8 @@ public class MainActivity extends Activity {
         layout_mineSpace.setColumnCount(colNum);
         b = new Button[rowNum][colNum];
         map = new Map(rowNum, colNum,mineNum);
-        for (i = 0; i < rowNum; i++) {
-            for (j = 0; j < colNum; j++) {
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
                 b[i][j] = new Button(this);
                 //b[i][j].setText("(" + i + "," + j + ")");
                 GridLayout.Spec rowSpec = GridLayout.spec(i);
@@ -143,9 +160,7 @@ public class MainActivity extends Activity {
                 layout_mineSpace.addView(b[i][j],params);
                 b[i][j].setOnClickListener(new OnClickListener() {
                     public void onClick(View v) {
-                        if(isRoundEnd)
-                            return;
-                        int i,j=0;
+                        int i=0,j=0;
                         for(i=0; i< rowNum; i++)
                         {
                             boolean symbol = false;
@@ -160,27 +175,20 @@ public class MainActivity extends Activity {
                             if(symbol)
                                 break;
                         }
-                        if(map.getShowStatus(i,j))
-                            return;
                         if(clickCount == 0)
                         {
                             map.generateMine(i,j);
-                            map.calc();
+                            startTiming();
                         }
+                        if(map.getShowStatus(i,j))
+                            return;
                         int m=map.get(i, j);
                         if (m != -1)
                         {
-                            showMine(i,j);
-                            if(m == 0)
-                            {
-                                if(i-1>=0)
-                                    autoExpand(i-1,j);
-                                if(j-1>=0)
-                                    autoExpand(i,j-1);
-                                if(j+1< colNum)
-                                    autoExpand(i,j+1);
-                                if(i+1< rowNum)
-                                    autoExpand(i+1,j);
+                            if(m == 0) {
+                                autoExpand(i,j);
+                            }else{
+                                showMine(i,j);
                             }
                         }
                         else {
@@ -188,6 +196,7 @@ public class MainActivity extends Activity {
                             Toast.makeText(MainActivity.this, "失败！", Toast.LENGTH_SHORT).show();
                             //layout_main.removeAllViews();
                         }
+                        //Log.d("c",String.format("%d,%d",clickCount,rowNum * colNum -mineNum));
                         if(clickCount == rowNum * colNum -mineNum) {
                             endRound();
                             Toast.makeText(MainActivity.this, "胜利！", Toast.LENGTH_SHORT).show();
@@ -213,10 +222,14 @@ public class MainActivity extends Activity {
                                 break;
                         }
                         if(!map.getShowStatus(i,j))
-                            if(((Button)v).getText() == "")
-                                ((Button)v).setText("🚩");
-                            else
+                            if(((Button)v).getText() == "") {
+                                ((Button) v).setText("🚩");
+                                tv_mineNum.setText(String.format(getString(R.string.str_int),Integer.parseInt(tv_mineNum.getText().toString())-1));
+                            }
+                            else{
                                 ((Button)v).setText("");
+                                tv_mineNum.setText(String.format(getString(R.string.str_int),Integer.parseInt(tv_mineNum.getText().toString())+1));
+                                }
                         return true;
                     }
                 });
@@ -227,17 +240,20 @@ public class MainActivity extends Activity {
     private  void endRound()
     {
         isRoundEnd = true;
-        showAllMine();
-        layout_ctrl.setVisibility(View.VISIBLE);
-        bt_start.setText("重开");
-        layout_status.setVisibility(View.INVISIBLE);
+        bt_start.setText(getString(R.string.bt_start));
+        et_rowNum.setEnabled(true);
+        et_colNum.setEnabled(true);
+        et_mineNum.setEnabled(true);
+        if(clickCount!=0)
+            showAllMine();
+        //bt_start.setText("重开");
     }
     private void showMine(int x,int y)
     {
         clickCount++;
         score++;
         tv_score.setText(String.format(getString(R.string.str_int),score));
-        b[x][y].setText(""+map.get(x,y));
+        b[x][y].setText(String.format(getString(R.string.str_int),map.get(x,y)));
         map.setShowStatus(x,y);
     }
     private void autoExpandSub(int m,int n)
@@ -279,16 +295,16 @@ public class MainActivity extends Activity {
             n = j + 1;
             autoExpandSub(m, n);
         }
-        if(map.get(i,j)!=-1)
-            showMine(i, j);
     }
     private void showAllMine(){
         for(int i = 0; i< rowNum; i++)
             for(int j = 0; j< colNum; j++)
             {
                 int v = map.get(i,j);
-                if(v==-1)
-                    b[i][j].setText("💣");
+                if(v==-1){
+                    if(b[i][j].getText().toString().matches(""))
+                        b[i][j].setText("💣");
+                }
                 else if(v==0)
                     b[i][j].setText("0");
                 else
@@ -304,7 +320,7 @@ public class MainActivity extends Activity {
             isShown = new boolean[x][y];
             for(int i=0;i<x;i++)
                 for(int j=0;j<y;j++) {
-                    a[i][j] = -2;
+                    a[i][j] = 0;
                     isShown[i][j] = false;
                 }
             this.x=x;
@@ -320,54 +336,48 @@ public class MainActivity extends Activity {
             return isShown[x][y];
         }
         void generateMine(int ex,int ey){
-            int i=0;
-            int m,n;
+            Log.d("1","generating mine");
+            Random random = new Random();
+            int i=0,m,n;
             while(i<mineNum)
             {
-                Random random = new Random();
                 m = random.nextInt(x-1)%x;
                 n = random.nextInt(y-1)%y;
-                if(m!=ex && n!=ey && a[m][n]==-2)
+                if(m!=ex && n!=ey && a[m][n]!=-1)
                 {
                     a[m][n]=-1;
+                    calc(m,n);
                     i++;
                 }
             }
+            Log.d("1","generated mine");
         }
-        void calc()
+        void calc(int m,int n)
         {
-            for(int i=0;i<x;i++)
-                for(int j=0;j<y;j++)
-                {
-                    if(a[i][j]==-2)
-                    {
-                        a[i][j] = 0;
-                        if(i-1>=0 && j-1>=0)
-                            if(a[i-1][j-1] == -1)
-                                a[i][j]++;
-                        if(i-1>=0)
-                            if(a[i-1][j] == -1)
-                                a[i][j]++;
-                        if(i-1>=0 && j+1<y)
-                            if(a[i-1][j+1] == -1)
-                                a[i][j]++;
-                        if(j-1>=0)
-                            if(a[i][j-1] == -1)
-                                a[i][j]++;
-                        if(j+1<y)
-                            if(a[i][j+1]== -1)
-                                a[i][j]++;
-                        if(i+1<x && j-1>=0)
-                            if(a[i+1][j-1] == -1)
-                                a[i][j]++;
-                        if(i+1<x)
-                            if(a[i+1][j] == -1)
-                                a[i][j]++;
-                        if(i+1<x && j+1<y)
-                            if(a[i+1][j+1]==-1)
-                                a[i][j]++;
-                    }
-                }
+            if(m-1>=0 && n-1>=0)
+                if(a[m-1][n-1] != -1)
+                    a[m-1][n-1]++;
+            if(m-1>=0)
+                if(a[m-1][n] != -1)
+                    a[m-1][n]++;
+            if(m-1>=0 && n+1<colNum)
+                if(a[m-1][n+1] != -1)
+                    a[m-1][n+1]++;
+            if(n-1>=0)
+                if(a[m][n-1] != -1)
+                    a[m][n-1]++;
+            if(n+1<colNum)
+                if(a[m][n+1]!= -1)
+                    a[m][n+1]++;
+            if(m+1<rowNum && n-1>=0)
+                if(a[m+1][n-1] != -1)
+                    a[m+1][n-1]++;
+            if(m+1<rowNum)
+                if(a[m+1][n] != -1)
+                    a[m+1][n]++;
+            if(m+1<rowNum && n+1<colNum)
+                if(a[m+1][n+1]!=-1)
+                    a[m+1][n+1]++;
         }
         public int get(int col, int row) {
             return a[col][row];
