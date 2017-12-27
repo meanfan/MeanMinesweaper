@@ -185,10 +185,9 @@ public class MainActivity extends Activity {
                         int m=map.get(i, j);
                         if (m != -1)
                         {
+                            showMine(i,j);
                             if(m == 0) {
                                 autoExpand(i,j);
-                            }else{
-                                showMine(i,j);
                             }
                         }
                         else {
