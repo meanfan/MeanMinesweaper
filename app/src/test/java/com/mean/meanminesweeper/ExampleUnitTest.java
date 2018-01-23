@@ -1,4 +1,4 @@
-package com.mean.meanminesweaper;
+package com.mean.meanminesweeper;
 
 import org.junit.Test;
 

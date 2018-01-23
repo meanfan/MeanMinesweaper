@@ -1,7 +1,10 @@
 package com.mean.meanminesweeper;
 
 import android.app.*;
+import android.graphics.Color;
 import android.os.*;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
 import android.view.*;
@@ -12,7 +15,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     private Button b[][];
     private EditText et_rowNum = null;
     private EditText et_colNum = null;
@@ -39,6 +42,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super. onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar tb =findViewById(R.id.toolbar);
+        tb.setTitle(getString(R.string.app_name));
+        tb.setTitleTextColor(Color.WHITE);
+        setSupportActionBar(tb);
         layout_main = findViewById(R.id.activity_main);
         layout_ctrl = findViewById(R.id.layout_ctrl);
         layout_status = findViewById(R.id.layout_status);
@@ -82,7 +89,7 @@ public class MainActivity extends Activity {
                     Toast.makeText(MainActivity.this, getString(R.string.mineNum_too_less), Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(num>row*num){
+                if(num>=row*col/2){
                     Toast.makeText(MainActivity.this, getString(R.string.mineNum_too_much), Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -138,6 +145,7 @@ public class MainActivity extends Activity {
         score = 0;
         clickCount = 0;
         isRoundEnd = false;
+        tv_time.setText(getString(R.string.time_zero));
         tv_score.setText(String.valueOf(0));
         tv_mineNum.setText(String.valueOf(mineNum));
         ScrollView sv = findViewById(R.id.sv);
