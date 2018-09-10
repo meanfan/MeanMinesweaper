@@ -1,4 +1,4 @@
-package com.mean.meanminesweeper;
+package com.mean.meanminesweeper.view;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

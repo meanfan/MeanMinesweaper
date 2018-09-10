@@ -1,4 +1,4 @@
-package com.mean.meanminesweeper.core;
+package com.mean.meanminesweeper.dao;
 
  public class Mine{
     private int xPos;

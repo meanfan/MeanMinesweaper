@@ -1,19 +1,26 @@
-package com.mean.meanminesweeper.core;
+package com.mean.meanminesweeper.dao;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 public class MineMap {
-        private ArrayList<Mine> mines;
+        private ArrayList<Mine> mines = new ArrayList<>();
         private int row,col, mineNum;
-        MineMap(int row,int col,int mine) {
+        public MineMap(int row,int col,int mine) {
             this.row=row;
             this.col=col;
             this.mineNum = mine;
         }
-        public void initMines(int ex,int ey){
-            for(int i=0;i<row * col;i++){
-                mines.add(new Mine(row,col));
+
+    public ArrayList<Mine> getMines() {
+        return mines;
+    }
+
+    public void initMines(int ex, int ey){
+            for(int i=0;i<row;i++){
+                for(int j=0;j<col;j++){
+                    mines.add(new Mine(i,j));
+                }
             }
             generateMine(ex,ey);
         }

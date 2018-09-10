@@ -1,11 +1,19 @@
-package com.mean.meanminesweeper.core;
+package com.mean.meanminesweeper.controller;
+
+import android.util.Log;
+
+import com.mean.meanminesweeper.dao.Mine;
+import com.mean.meanminesweeper.dao.MineMap;
+import com.mean.meanminesweeper.view.GameActivity;
 
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+//NotThreadSafe
 public class GameCore {
     private static GameCore instance = null;
+    private GameActivity gameActivity = null;
     private int row;
     private int col;
     private int mine;
@@ -16,7 +24,15 @@ public class GameCore {
     private TimerTask task;
     private Timer gameTime;
     private GameCore(){
+        gameStatus = "new";
+    }
 
+    public void setGameActivity(GameActivity gameActivity) {
+        this.gameActivity = gameActivity;
+    }
+
+    public String getGameStatus(){
+        return gameStatus;
     }
     public static GameCore getInstance(){
         if(instance == null){
@@ -50,43 +66,40 @@ public class GameCore {
         gameTime = new Timer();
         gameTime.schedule(task,1000,1000);
     }
-    public ArrayList<Mine> mineOnClick(int x, int y) {
+    public void mineOnClick(int x, int y) {
         ArrayList<Mine> list = new ArrayList<>();
+        Log.d("dd", "mineOnClick: gameStatus:"+gameStatus);
         if(gameStatus.equals("init done")){
             start(x,y);
             mineMap.setShown(x,y,true);
             gameStatus = "gaming";
             list.add(mineMap.getMine(x,y));
             autoExpand(x,y,list);
-            return list;
+            gameActivity.showMine(list);
+            startTiming();
+            return;
         }
         if(gameStatus.equals("gaming")){
+
             if(mineMap.isMine(x,y)){
-                gameStatus = "lose";
-                return list;
+                gameStatus = "lose_end";
+                gameActivity.showMine(mineMap.getMines());
+                endRound();
             }else {
                 mineMap.setShown(x,y,true);
                 list.add(mineMap.getMine(x,y));
                 autoExpand(x,y,list);
-                return list;
+                gameActivity.showMine(list);
             }
+            return;
         }
-        return  list;
     }
-    public boolean mineOnLongclick(int x,int y){
-        boolean mark = mineMap.isMarked(x,y);
-        mineMap.setMarked(x,y,!mark);
-        return mark;
-    }
-    private  void endRound()
-    {
-        if(gameStatus.equals("gaming"))
-            showAllMine();
-        gameStatus = "end";
+    private void endRound() {
         gameTime.cancel();
+        mineMap=null;
     }
 
-    private void autoExpandProc(int m, int n,ArrayList<Mine> list)
+    private void expand(int m, int n, ArrayList<Mine> list)
     {
         if(m>=0 && m< row && n>=0 && n< col) {
             if(!mineMap.isShown(m,n)) {
@@ -105,29 +118,26 @@ public class GameCore {
             int m, n;
             m = x - 1;
             n = y - 1;
-            autoExpandProc(m, n,list);
+            expand(m, n,list);
             n = y;
-            autoExpandProc(m, n,list);
+            expand(m, n,list);
             n = y + 1;
-            autoExpandProc(m, n,list);
+            expand(m, n,list);
 
             m = x;
             n = y - 1;
-            autoExpandProc(m, n,list);
+            expand(m, n,list);
             n = y + 1;
-            autoExpandProc(m, n,list);
+            expand(m, n,list);
 
             m = x + 1;
             n = y - 1;
-            autoExpandProc(m, n,list);
+            expand(m, n,list);
             n = y;
-            autoExpandProc(m, n,list);
+            expand(m, n,list);
             n = y + 1;
-            autoExpandProc(m, n,list);
+            expand(m, n,list);
         }
-    }
-    private void showAllMine(){
-        //TODO
     }
 }
 

@@ -1,4 +1,4 @@
-package com.mean.meanminesweeper;
+package com.mean.meanminesweeper.view;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -19,6 +19,8 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+
+import com.mean.meanminesweeper.R;
 
 import java.util.List;
 
