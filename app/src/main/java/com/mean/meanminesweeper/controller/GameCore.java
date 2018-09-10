@@ -12,6 +12,7 @@ import java.util.TimerTask;
 
 //NotThreadSafe
 public class GameCore {
+    private static final String TAG = "GameCore";
     private static GameCore instance = null;
     private GameActivity gameActivity = null;
     private int row;
@@ -19,6 +20,7 @@ public class GameCore {
     private int mine;
     private int sec;
     private int score;
+    private int shownMineCounter = 0;
     private String gameStatus;
     private MineMap mineMap;
     private TimerTask task;
@@ -45,13 +47,11 @@ public class GameCore {
         this.row = row;
         this.col = col;
         this.mine = mine;
+        shownMineCounter = 0;
         sec = 0;
         score = 0;
         mineMap = new MineMap(row, col, mine);
         gameStatus = "init done";
-    }
-    public void start(int startX,int startY){
-        mineMap.initMines(startX,startY);
     }
     public void startTiming()
     {
@@ -68,15 +68,21 @@ public class GameCore {
     }
     public void mineOnClick(int x, int y) {
         ArrayList<Mine> list = new ArrayList<>();
-        Log.d("dd", "mineOnClick: gameStatus:"+gameStatus);
+        Log.d(TAG, "mineOnClick: gameStatus = "+gameStatus);
         if(gameStatus.equals("init done")){
-            start(x,y);
+            mineMap.initMines(x,y);
             mineMap.setShown(x,y,true);
+            shownMineCounter = 0;
             gameStatus = "gaming";
             list.add(mineMap.getMine(x,y));
             autoExpand(x,y,list);
             gameActivity.showMine(list);
+            shownMineCounter+=list.size();
             startTiming();
+            Log.d(TAG, "mineOnClick: shownMineCounter = "+shownMineCounter);
+            return;
+        }
+        if(mineMap.getMine(x,y).isShown()){
             return;
         }
         if(gameStatus.equals("gaming")){
@@ -90,8 +96,13 @@ public class GameCore {
                 list.add(mineMap.getMine(x,y));
                 autoExpand(x,y,list);
                 gameActivity.showMine(list);
+                shownMineCounter+=list.size();
+                Log.d(TAG, "mineOnClick: shownMineCounter = "+shownMineCounter);
+                if(shownMineCounter+mine == row*col){
+                    gameStatus = "win_end";
+                    gameActivity.showMine(mineMap.getMines());
+                }
             }
-            return;
         }
     }
     private void endRound() {

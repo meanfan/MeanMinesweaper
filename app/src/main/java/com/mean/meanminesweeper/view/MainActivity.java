@@ -28,9 +28,9 @@ public class MainActivity extends AppCompatActivity
     private LinearLayout layout_main = null;
     private LinearLayout layout_ctrl = null;
     private LinearLayout layout_status = null;
-    private int rowNum = 9;
-    private int colNum = 9;
-    private int mineNum = 10;
+    private int rowNum = 5;
+    private int colNum = 5;
+    private int mineNum = 3;
     private TextView tv_time = null;
     private TextView tv_score = null;
     private TextView tv_mineNum = null;
@@ -76,6 +76,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this,GameActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putInt("row",rowNum);
+                bundle.putInt("col",colNum);
+                bundle.putInt("mine",mineNum);
                 startActivity(intent);
             }
         });

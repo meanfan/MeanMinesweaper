@@ -1,8 +1,9 @@
 package com.mean.meanminesweeper.view;
 
+import android.graphics.Color;
 import android.os.*;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.util.Log;
 import android.view.*;
 import android.view.View.OnClickListener;
@@ -13,7 +14,6 @@ import com.mean.meanminesweeper.controller.GameCore;
 import com.mean.meanminesweeper.dao.Mine;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,9 +21,6 @@ import java.util.TimerTask;
 public class GameActivity extends AppCompatActivity {
     GameCore gameCore = null;
     private Button mineButton[][];
-    private EditText et_rowNum = null;
-    private EditText et_colNum = null;
-    private EditText et_mineNum = null;
     private GridLayout layout_mineSpace = null;
     private LinearLayout layout_main = null;
     private LinearLayout layout_ctrl = null;
@@ -32,9 +29,9 @@ public class GameActivity extends AppCompatActivity {
     private TextView tv_score = null;
     private TextView tv_mineNum = null;
     private Button bt_start = null;
-    private int rowNum = 9;
-    private int colNum = 9;
-    private int mineNum = 10;
+    private int rowNum = 5;
+    private int colNum = 5;
+    private int mineNum = 3;
     private int clickCount = 0;
     private Timer gameTime = null;
     private TimerTask task = null;
@@ -45,27 +42,24 @@ public class GameActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super. onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-//        Toolbar tb =findViewById(R.id.tb_main);
-//        tb.setTitle(getString(R.string.app_name));
-//        tb.setTitleTextColor(Color.WHITE);
-//        tb.setNavigationOnClickListener(new NavListener());
-//        setSupportActionBar(tb);
-//        tb.setNavigationIcon(R.drawable.ic_menu_white_24dp);
+        android.support.v7.widget.Toolbar tb =findViewById(R.id.tb_main);
+        tb.setTitle(getString(R.string.gaming_activity_title));
+        tb.setTitleTextColor(Color.WHITE);
+        tb.setNavigationOnClickListener(new NavListener());
+        setSupportActionBar(tb);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        tb.setNavigationOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO User Manual Stop Game
+            }
+        });
+        //tb.setNavigationIcon(R.drawable.ic_keyboard_backspace_white);
         layout_main = findViewById(R.id.activity_main);
         layout_ctrl = findViewById(R.id.layout_ctrl);
         layout_status = findViewById(R.id.layout_status);
 
-        et_rowNum = findViewById(R.id.et_rowNum);
-        et_rowNum.setText(String.format(getString(R.string.str_int),rowNum));
-        et_rowNum.setInputType(InputType.TYPE_CLASS_NUMBER);
-
-        et_colNum = findViewById(R.id.et_colNum);
-        et_colNum.setText(String.format(getString(R.string.str_int),colNum));
-        et_colNum.setInputType(InputType.TYPE_CLASS_NUMBER);
-
-        et_mineNum = findViewById(R.id.et_mineNum);
-        et_mineNum.setText(String.format(getString(R.string.str_int),mineNum));
-        et_mineNum.setInputType(InputType.TYPE_CLASS_NUMBER);
         tv_time = findViewById(R.id.tv_time);
         tv_score = findViewById(R.id.tv_score);
         tv_mineNum = findViewById(R.id.tv_mineNum);
@@ -79,29 +73,26 @@ public class GameActivity extends AppCompatActivity {
 
                 String gameStatus = gameCore.getGameStatus();
                 if(gameStatus.equals("new")||gameStatus.contains("end")){
-                    int row = Integer.parseInt(et_rowNum.getText().toString());
-                    int col = Integer.parseInt(et_colNum.getText().toString());
-                    int mine = Integer.parseInt(et_mineNum.getText().toString());
-                    if(row<9 ||col<9) {
-                        Toast.makeText(GameActivity.this, getString(R.string.size_too_small), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if(row>30 || col>24)
-                    {
-                        Toast.makeText(GameActivity.this, getString(R.string.size_too_big), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if(mine<10) {
-                        Toast.makeText(GameActivity.this, getString(R.string.mineNum_too_less), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if(mine>=row*col/2){
-                        Toast.makeText(GameActivity.this, getString(R.string.mineNum_too_much), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    rowNum = row;
-                    colNum = col;
-                    mineNum = mine;
+                    rowNum = getIntent().getIntExtra("row",5);
+                    colNum = getIntent().getIntExtra("col",5);
+                    mineNum = getIntent().getIntExtra("mine",3);
+//                    if(row<9 ||col<9) {
+//                        Toast.makeText(GameActivity.this, getString(R.string.size_too_small), Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
+//                    if(row>30 || col>24)
+//                    {
+//                        Toast.makeText(GameActivity.this, getString(R.string.size_too_big), Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
+//                    if(mine<10) {
+//                        Toast.makeText(GameActivity.this, getString(R.string.mineNum_too_less), Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
+//                    if(mine>=row*col/2){
+//                        Toast.makeText(GameActivity.this, getString(R.string.mineNum_too_much), Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
                     gameCore.initGame(rowNum,colNum,mineNum);
                     startRound();
                     bt_start.setText("结束");
@@ -145,9 +136,6 @@ public class GameActivity extends AppCompatActivity {
     }
     public void startRound()
     {
-        et_rowNum.setEnabled(false);
-        et_colNum.setEnabled(false);
-        et_mineNum.setEnabled(false);
         sec = 0;
         score = 0;
         clickCount = 0;
@@ -236,10 +224,11 @@ public class GameActivity extends AppCompatActivity {
     private  void endRound()
     {
         bt_start.setText(getString(R.string.bt_start));
-        et_rowNum.setEnabled(true);
-        et_colNum.setEnabled(true);
-        et_mineNum.setEnabled(true);
-        Toast.makeText(GameActivity.this,"Game Over!",Toast.LENGTH_LONG).show();
+        if(gameCore.getGameStatus().contains("win")){
+            Toast.makeText(GameActivity.this,"You Win!",Toast.LENGTH_LONG).show();
+        }else if(gameCore.getGameStatus().contains("lose")){
+            Toast.makeText(GameActivity.this,"Game Over!",Toast.LENGTH_LONG).show();
+        }
     }
     public void showMine(ArrayList<Mine> mines)
     {
