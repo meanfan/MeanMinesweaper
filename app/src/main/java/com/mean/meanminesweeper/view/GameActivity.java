@@ -22,13 +22,9 @@ public class GameActivity extends AppCompatActivity {
     GameCore gameCore = null;
     private Button mineButton[][];
     private GridLayout layout_mineSpace = null;
-    private LinearLayout layout_main = null;
-    private LinearLayout layout_ctrl = null;
-    private LinearLayout layout_status = null;
     private TextView tv_time = null;
     private TextView tv_score = null;
     private TextView tv_mineNum = null;
-    private Button bt_start = null;
     private int rowNum = 5;
     private int colNum = 5;
     private int mineNum = 3;
@@ -53,55 +49,29 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //TODO User Manual Stop Game
+                GameCore.getInstance().endGame();
+                GameActivity.this.finish();
             }
         });
         //tb.setNavigationIcon(R.drawable.ic_keyboard_backspace_white);
-        layout_main = findViewById(R.id.activity_main);
-        layout_ctrl = findViewById(R.id.layout_ctrl);
-        layout_status = findViewById(R.id.layout_status);
 
         tv_time = findViewById(R.id.tv_time);
         tv_score = findViewById(R.id.tv_score);
         tv_mineNum = findViewById(R.id.tv_mineNum);
-        bt_start = findViewById(R.id.bt_start);
-
         gameCore = GameCore.getInstance();
         gameCore.setGameActivity(this);
-        bt_start.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        String gameStatus = gameCore.getGameStatus();
+        if(gameStatus.equals("new")||gameStatus.contains("end")){
+            Bundle bundle = getIntent().getExtras();
+            rowNum = bundle.getInt("row",5);
+            colNum = bundle.getInt("col",5);
+            mineNum = bundle.getInt("mine",3);
+            gameCore.initGame(rowNum,colNum,mineNum);
+            startRound();
+        }else if(gameStatus.equals("gaming")){
+            //TODO end game
 
-                String gameStatus = gameCore.getGameStatus();
-                if(gameStatus.equals("new")||gameStatus.contains("end")){
-                    rowNum = getIntent().getIntExtra("row",5);
-                    colNum = getIntent().getIntExtra("col",5);
-                    mineNum = getIntent().getIntExtra("mine",3);
-//                    if(row<9 ||col<9) {
-//                        Toast.makeText(GameActivity.this, getString(R.string.size_too_small), Toast.LENGTH_SHORT).show();
-//                        return;
-//                    }
-//                    if(row>30 || col>24)
-//                    {
-//                        Toast.makeText(GameActivity.this, getString(R.string.size_too_big), Toast.LENGTH_SHORT).show();
-//                        return;
-//                    }
-//                    if(mine<10) {
-//                        Toast.makeText(GameActivity.this, getString(R.string.mineNum_too_less), Toast.LENGTH_SHORT).show();
-//                        return;
-//                    }
-//                    if(mine>=row*col/2){
-//                        Toast.makeText(GameActivity.this, getString(R.string.mineNum_too_much), Toast.LENGTH_SHORT).show();
-//                        return;
-//                    }
-                    gameCore.initGame(rowNum,colNum,mineNum);
-                    startRound();
-                    bt_start.setText("结束");
-                }else if(gameStatus.equals("gaming")){
-                    //TODO end game
-                    bt_start.setText("开始");
-                }
-            }
-        });
+        }
     }
     public void startTiming()
     {
@@ -223,7 +193,6 @@ public class GameActivity extends AppCompatActivity {
     }
     private  void endRound()
     {
-        bt_start.setText(getString(R.string.bt_start));
         if(gameCore.getGameStatus().contains("win")){
             Toast.makeText(GameActivity.this,"You Win!",Toast.LENGTH_LONG).show();
         }else if(gameCore.getGameStatus().contains("lose")){
@@ -241,12 +210,30 @@ public class GameActivity extends AppCompatActivity {
             Log.d("d", "showMine: "+x+","+y);
             if(mines.get(i).isMine()){
                 mineButton[x][y].setText("💣");
+                //mineButton[x][y].setBackground(null);
                 if(!isRoundEnd){
                     isRoundEnd = true;
                     endRound();
                 }
             }else{
-                mineButton[x][y].setText(String.format(getString(R.string.str_int),mines.get(i).getMineAround()));
+                mineButton[x][y].setClickable(false);
+                switch (mines.get(i).getMineAround()){
+                    case 0:
+                        mineButton[x][y].setBackground(null);
+                        break;
+                    case 1:
+                        mineButton[x][y].setTextColor(getResources().getColor(R.color.colorMineNum_1));
+                        break;
+                    case 2:
+                        mineButton[x][y].setTextColor(getResources().getColor(R.color.colorMineNum_2));
+                        break;
+                    default:
+                        mineButton[x][y].setTextColor(getResources().getColor(R.color.colorMineNum_more));
+                }
+                if(mines.get(i).getMineAround()!=0) {
+                    //mineButton[x][y].setBackground(getResources().getDrawable(R.drawable.shape_shown_mine_background));
+                    mineButton[x][y].setText(String.format(getString(R.string.str_int), mines.get(i).getMineAround()));
+                }
             }
         }
     }

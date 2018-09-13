@@ -3,4 +3,13 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorDifficultyEasy">#259b24</color>
+    <color name="colorDifficultyNormal">#5677fc</color>
+    <color name="colorDifficultyHard">#e51c23</color>
+    <color name="colorDifficultyCustomize">#607d8b</color>
+    <color name="colorMineNum_1">#2196F3</color>
+    <color name="colorMineNum_2">#4CAF50</color>
+    <color name="colorMineNum_more">#F44336</color>
+    <color name="colorMineShownBackground">#9E9E9E</color>
+
 </resources>

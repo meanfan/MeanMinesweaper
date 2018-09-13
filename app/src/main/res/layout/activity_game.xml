@@ -13,20 +13,6 @@
         android:visibility="visible" />
 
     <LinearLayout
-        android:id="@+id/layout_ctrl"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="top|start"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/bt_start"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/bt_start" />
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/layout_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

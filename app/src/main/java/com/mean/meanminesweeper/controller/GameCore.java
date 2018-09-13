@@ -150,5 +150,8 @@ public class GameCore {
             expand(m, n,list);
         }
     }
+    public void endGame(){
+        GameCore.instance = null;
+    }
 }
 
