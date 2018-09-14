@@ -129,6 +129,7 @@ public class GameActivity extends AppCompatActivity {
                 params.width = 100;
                 params.height = 100;
                 params.setGravity(Gravity.FILL);
+                mineButton[i][j].setPadding(0,0,0,0);
                 layout_mineSpace.addView(mineButton[i][j],params);
                 mineButton[i][j].setOnClickListener(new OnClickListener() {
                     public void onClick(View v) {
