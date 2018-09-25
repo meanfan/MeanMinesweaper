@@ -1,6 +1,9 @@
 package com.mean.meanminesweeper.view;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -19,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mean.meanminesweeper.R;
+import com.mean.meanminesweeper.Util.PrefManager;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -31,6 +35,12 @@ public class MainActivity extends AppCompatActivity
     private static final int DIFF_HARD_ROW = 16;
     private static final int DIFF_HARD_COL = 16;
     private static final int DIFF_HARD_MINE = 40;
+    private int diff_custom_row = 9;
+    private int diff_custom_col = 9;
+    private int diff_custom_mine = 5;
+
+
+    private static final int REQUEST_CODE_MAIN2SETTING = 38;
 
     private EditText et_rowNum = null;
     private EditText et_colNum = null;
@@ -109,18 +119,23 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this,GameActivity.class);
                 Bundle bundle = new Bundle();
-                int row=9,col=9,mine=10;
-                //TODO pop up dialog for user input
-                Toast.makeText(MainActivity.this,R.string.str_function_closed,Toast.LENGTH_SHORT).show();
-                return;
-
-//                bundle.putInt("row", row);
-//                bundle.putInt("col", col);
-//                bundle.putInt("mine", mine);
-//                intent.putExtras(bundle);
-//                startActivity(intent);
+                bundle.putInt("row", diff_custom_row);
+                bundle.putInt("col", diff_custom_col);
+                bundle.putInt("mine", diff_custom_mine);
+                intent.putExtras(bundle);
+                startActivity(intent);
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        SharedPreferences sps = getSharedPreferences("game_setting", Context.MODE_PRIVATE);
+        Bundle bundle = PrefManager.getCustomModePref(sps);
+        diff_custom_row = bundle.getInt(PrefManager.CUSTOM_MODE_SIZE_X);
+        diff_custom_col = bundle.getInt(PrefManager.CUSTOM_MODE_SIZE_Y);
+        diff_custom_mine = bundle.getInt(PrefManager.CUSTOM_MODE_MINE_NUM);
     }
 
     @Override
@@ -161,9 +176,10 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_game) {
             // Handle the camera action
         } else if (id == R.id.nav_option) {
-            Toast.makeText(MainActivity.this,R.string.str_function_closed,Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MainActivity.this,R.string.str_function_closed,Toast.LENGTH_SHORT).show();
+            startActivityForResult(new Intent(this,SettingsActivity.class),REQUEST_CODE_MAIN2SETTING);
 
-        } else if (id == R.id.nav_about) {
+        } else if (id == R.id.nav_share) {
             //Toast.makeText(MainActivity.this,R.string.str_function_closed,Toast.LENGTH_SHORT).show();
             Intent share_intent = new Intent();
             share_intent.setAction(Intent.ACTION_SEND);//设置分享行为
@@ -184,5 +200,15 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == REQUEST_CODE_MAIN2SETTING){
+            Bundle bundle = data.getExtras();
+            diff_custom_row = bundle.getInt("size_x");
+            diff_custom_col = bundle.getInt("size_y");
+            diff_custom_mine = bundle.getInt("mine_num");
+        }
     }
 }

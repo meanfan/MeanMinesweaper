@@ -41,7 +41,6 @@ public class GameActivity extends AppCompatActivity {
         android.support.v7.widget.Toolbar tb =findViewById(R.id.tb_main);
         tb.setTitle(getString(R.string.gaming_activity_title));
         tb.setTitleTextColor(Color.WHITE);
-        tb.setNavigationOnClickListener(new NavListener());
         setSupportActionBar(tb);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -53,7 +52,6 @@ public class GameActivity extends AppCompatActivity {
                 GameActivity.this.finish();
             }
         });
-        //tb.setNavigationIcon(R.drawable.ic_keyboard_backspace_white);
 
         tv_time = findViewById(R.id.tv_time);
         tv_score = findViewById(R.id.tv_score);
